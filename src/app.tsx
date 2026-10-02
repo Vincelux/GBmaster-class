@@ -109,23 +109,27 @@ export function App() {
         <p class="tiny">{o.mastered} of {o.total} items mastered · {pct}%</p>
       </header>
 
-      <h2 class="section">Your themes</h2>
-      <div class="list">
-        {PACKS.map((p) => {
-          const s = packStats(p.items);
-          return (
-            <button class="card" onClick={() => setView({ name: 'pack', pack: p })}>
-              <span class="badge">{p.icon}</span>
-              <span class="grow">
-                <strong>{p.title}</strong>
-                <small>{p.subtitle}</small>
-                <span class="mini"><i style={{ width: `${(s.mastered / s.total) * 100}%` }} /></span>
-              </span>
-              <span class="count">{s.due > 0 ? <em>{s.due}</em> : null}<small>{s.total}</small></span>
-            </button>
-          );
-        })}
-      </div>
+      {[...new Set(PACKS.map((p) => p.group))].map((group) => (
+        <section key={group} class="group">
+          <h2 class="section">{group}</h2>
+          <div class="list">
+            {PACKS.filter((p) => p.group === group).map((p) => {
+              const s = packStats(p.items);
+              return (
+                <button class="card" onClick={() => setView({ name: 'pack', pack: p })}>
+                  <span class="badge">{p.icon}</span>
+                  <span class="grow">
+                    <strong>{p.title}</strong>
+                    <small>{p.subtitle}</small>
+                    <span class="mini"><i style={{ width: `${(s.mastered / s.total) * 100}%` }} /></span>
+                  </span>
+                  <span class="count">{s.due > 0 ? <em>{s.due}</em> : null}<small>{s.total}</small></span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </main>
   );
 }

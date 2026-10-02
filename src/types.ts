@@ -23,6 +23,7 @@ interface PackBase {
   title: string;
   subtitle: string;
   icon: string;
+  group: string;
   modes: Mode[];
 }
 export interface VerbPack extends PackBase {
