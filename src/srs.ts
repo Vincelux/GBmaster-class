@@ -1,5 +1,6 @@
 // Leitner-style spaced repetition, stored locally on the device.
 import type { Item } from './types';
+import { bumpToday } from './activity';
 
 const KEY = 'gbm.progress.v1';
 const DAY = 86_400_000;
@@ -50,6 +51,7 @@ export function record(id: string, correct: boolean) {
   }
   s[id] = c;
   write();
+  bumpToday();
 }
 
 export function packStats(items: Item[]) {

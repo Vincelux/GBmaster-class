@@ -159,3 +159,36 @@ mark { background: none; color: var(--brass); font-weight: 700; }
 @media (min-width: 700px) {
   .screen { padding-top: 48px; }
 }
+
+/* streak + daily goal */
+.hero-top { display: flex; align-items: center; justify-content: space-between; }
+.icon-btn { font-size: 22px; line-height: 1; color: var(--muted); padding: 8px; margin: -8px; border-radius: 10px; }
+.today {
+  display: flex; gap: 16px; align-items: center; margin: 14px 0 4px; padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+}
+.streak { display: grid; justify-items: center; min-width: 64px; }
+.streak b { font-family: var(--serif); font-size: 36px; line-height: 1; color: var(--brass); }
+.streak span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.goal { flex: 1; display: grid; gap: 6px; }
+.goal p:first-child { font-size: 14px; font-weight: 500; }
+
+/* audio */
+.speak-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.speak {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 99px; background: var(--surface); font-size: 14px; font-weight: 500;
+}
+
+/* settings */
+.page-title { font-size: 32px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow); }
+.panel h2 { font-size: 19px; }
+.small { font-size: 14px; }
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; }
+.segmented button { text-align: center; min-height: 46px; font-weight: 600; }
+.segmented button.on { background: var(--navy); color: var(--on-navy); }
+.inline { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+.inline input { font-size: 18px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg); }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.switch input { width: 22px; height: 22px; accent-color: var(--brass); }
