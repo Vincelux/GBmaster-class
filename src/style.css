@@ -192,3 +192,6 @@ mark { background: none; color: var(--brass); font-weight: 700; }
 .inline input { font-size: 18px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--bg); }
 .switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .switch input { width: 22px; height: 22px; accent-color: var(--brass); }
+
+.group { display: grid; gap: 10px; }
+

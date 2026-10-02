@@ -3,6 +3,12 @@ import { VERBS } from './verbs';
 import { LEGAL } from './legal';
 import { FINANCE } from './finance';
 import { BUSINESS } from './business';
+import { PHRASAL } from './phrasal';
+import { FALSE_FRIENDS } from './falsefriends';
+import { TECH } from './tech';
+import { MARKETING } from './marketing';
+import { HR } from './hr';
+import { MEDICAL } from './medical';
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const split = (s: string) => s.split('/').map((x) => x.trim());
@@ -28,6 +34,7 @@ export const PACKS: Pack[] = [
     title: 'Irregular verbs',
     subtitle: 'Les verbes qui font trébucher, même à haut niveau',
     icon: '↺',
+    group: 'Language',
     modes: ['flip', 'choice', 'type'],
     items: verbItems,
   },
@@ -37,6 +44,7 @@ export const PACKS: Pack[] = [
     title: 'Legal English',
     subtitle: 'Contrats, contentieux, procédure',
     icon: '⚖',
+    group: 'Professional',
     modes: ['flip', 'choice', 'cloze'],
     items: vocab('legal', LEGAL),
   },
@@ -46,6 +54,7 @@ export const PACKS: Pack[] = [
     title: 'Finance',
     subtitle: 'Marchés, comptabilité, investissement',
     icon: '£',
+    group: 'Professional',
     modes: ['flip', 'choice', 'cloze'],
     items: vocab('finance', FINANCE),
   },
@@ -55,7 +64,68 @@ export const PACKS: Pack[] = [
     title: 'Business conversation',
     subtitle: 'Réunions, e-mails, expressions du quotidien pro',
     icon: '☕',
+    group: 'Professional',
     modes: ['flip', 'choice', 'cloze'],
     items: vocab('business', BUSINESS),
+  },
+  {
+    id: 'phrasal',
+    kind: 'vocab',
+    title: 'Phrasal verbs',
+    subtitle: 'Les verbes à particule du quotidien professionnel',
+    icon: '↗',
+    group: 'Language',
+    modes: ['flip', 'choice', 'cloze'],
+    items: vocab('phrasal', PHRASAL),
+  },
+  {
+    id: 'falsefriends',
+    kind: 'vocab',
+    title: 'False friends',
+    subtitle: 'Les faux amis français / anglais',
+    icon: '≠',
+    group: 'Language',
+    modes: ['flip', 'choice', 'cloze'],
+    items: vocab('falsefriends', FALSE_FRIENDS),
+  },
+  {
+    id: 'tech',
+    kind: 'vocab',
+    title: 'Tech & IT',
+    subtitle: 'Logiciel, cloud, sécurité, IA',
+    icon: '</>',
+    group: 'Professional',
+    modes: ['flip', 'choice', 'cloze'],
+    items: vocab('tech', TECH),
+  },
+  {
+    id: 'marketing',
+    kind: 'vocab',
+    title: 'Marketing',
+    subtitle: 'Marque, digital, vente, communication',
+    icon: '◎',
+    group: 'Professional',
+    modes: ['flip', 'choice', 'cloze'],
+    items: vocab('marketing', MARKETING),
+  },
+  {
+    id: 'hr',
+    kind: 'vocab',
+    title: 'Human resources',
+    subtitle: 'Recrutement, contrats, carrière, relations sociales',
+    icon: '☺',
+    group: 'Professional',
+    modes: ['flip', 'choice', 'cloze'],
+    items: vocab('hr', HR),
+  },
+  {
+    id: 'medical',
+    kind: 'vocab',
+    title: 'Medical English',
+    subtitle: 'Symptômes, soins, hôpital, traitements',
+    icon: '✚',
+    group: 'Professional',
+    modes: ['flip', 'choice', 'cloze'],
+    items: vocab('medical', MEDICAL),
   },
 ];
