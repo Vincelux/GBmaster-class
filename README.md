@@ -4,8 +4,8 @@ Mobile-first PWA for advanced English learners: irregular verbs and professional
 Works offline once installed; progress is stored locally (spaced repetition, Leitner boxes).
 
 ## Themes
-- **Irregular verbs** (155, incl. prefixed verbs and UK/US double forms): flashcards, multiple choice, typing
-- **Legal English** (65), **Finance** (63), **Business conversation** (67): flashcards, multiple choice, in-context gap fill
+- **Irregular verbs** (287: core verbs, prefixed verbs, rare and literary verbs, UK/US double forms): flashcards, multiple choice, typing
+- **Legal English** (176), **Finance** (177), **Business conversation** (195): flashcards, multiple choice, in-context gap fill
 
 ## Features
 - Spoken pronunciation (browser speech synthesis, British English preferred), optional auto-play
