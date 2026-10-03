@@ -4,7 +4,7 @@ Mobile-first PWA for advanced English learners: irregular verbs and professional
 Works offline once installed; progress is stored locally (spaced repetition, Leitner boxes).
 
 ## Themes (1,378 items)
-- **Language**: Irregular verbs (287), Phrasal verbs (118), False friends (100)
+- **Language**: Irregular verbs (290, in three difficulty levels), Phrasal verbs (118), False friends (100)
 - **Professional**: Legal English (176), Finance (177), Business conversation (195), Tech & IT (88), Marketing (74), Human resources (77), Medical English (86)
 
 Verbs: flashcards, multiple choice, typing. Vocabulary packs: flashcards, multiple choice, in-context gap fill.

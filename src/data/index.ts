@@ -1,5 +1,5 @@
 import type { Pack, VerbItem, VocabItem } from '../types';
-import { VERBS } from './verbs';
+import { ESSENTIAL, INTERMEDIATE, VERBS } from './verbs';
 import { LEGAL } from './legal';
 import { FINANCE } from './finance';
 import { BUSINESS } from './business';
@@ -24,6 +24,7 @@ const verbItems: VerbItem[] = VERBS.map(([base, past, pp, fr, tip]) => ({
   pp: split(pp),
   fr,
   tip,
+  level: ESSENTIAL.has(base) ? 1 : INTERMEDIATE.has(base) ? 2 : 3,
 }));
 
 // To add a theme: create a data file and register a pack here.
@@ -32,7 +33,7 @@ export const PACKS: Pack[] = [
     id: 'verbs',
     kind: 'verbs',
     title: 'Irregular verbs',
-    subtitle: 'Les verbes qui font trébucher, même à haut niveau',
+    subtitle: 'Des verbes de base aux plus rares, par niveaux',
     icon: '↺',
     group: 'Language',
     modes: ['flip', 'choice', 'type'],

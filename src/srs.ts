@@ -89,7 +89,10 @@ export function pickSession<T extends Item>(items: T[], n = 10): T[] {
   }
   due.sort((a, b) => getCard(a.id)!.box - getCard(b.id)!.box);
   later.sort((a, b) => getCard(a.id)!.due - getCard(b.id)!.due);
-  return [...due, ...shuffle(fresh), ...later].slice(0, n);
+  // New cards are introduced from easiest to hardest (random within a level).
+  const level = (it: Item) => ('level' in it ? it.level : 0);
+  const ordered = shuffle(fresh).sort((x, y) => level(x) - level(y));
+  return [...due, ...ordered, ...later].slice(0, n);
 }
 
 export function overall(items: Item[][]) {

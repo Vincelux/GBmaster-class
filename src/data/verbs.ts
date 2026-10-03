@@ -288,4 +288,25 @@ export const VERBS: [string, string, string, string, string?][] = [
   ['babysit', 'babysat', 'babysat', 'garder des enfants'],
   ['breastfeed', 'breastfed', 'breastfed', 'allaiter'],
   ['spoon-feed', 'spoon-fed', 'spoon-fed', 'mâcher le travail à (fig.)'],
+  ['begin', 'began', 'begun', 'commencer'],
+  ['break', 'broke', 'broken', 'casser ; rompre', 'Break a deal / break the law / break even : expressions très fréquentes.'],
+  ['let', 'let', 'let', 'laisser ; permettre', 'Let\'s = let us (proposition).'],
 ];
+
+// Difficulty levels: anything not listed here is level 3 (advanced).
+export const ESSENTIAL = new Set(
+  `be become begin bite break bring build buy catch choose come cost cut do draw drink drive eat fall feel fight find fly
+   forget get give go grow have hear hide hit hold hurt keep know lead leave lend let lie lose make mean meet pay put read
+   ride ring rise run say see sell send set shoot show shut sing sit sleep speak spend stand steal swim take teach tear tell
+   think throw understand wake wear win write`.split(/\s+/)
+);
+
+export const INTERMEDIATE = new Set(
+  `bear beat bend bet bid bind bleed blow breed broadcast burn burst cast cling deal dig dream feed flee forbid forgive freeze
+   hang kneel lay lean leap learn light overcome quit rid seek sew shake shed shine shrink sink slide smell sow spell spill
+   spin split spoil spread spring stick sting strike swear sweep swing weave weep wind withdraw prove undo redo overdo rebuild
+   rewrite retell overhear oversee overthrow outgrow outdo outrun overtake undergo undertake uphold upset withhold withstand
+   foresee foretell forgo mistake misunderstand mislead overeat overpay overspend oversleep overwrite override rethink reset
+   rerun resell resend retake rewind remake repay reread outbid outsell undercut underpay undersell underwrite unfreeze
+   mislay misspell mishear misread forecast input babysit breastfeed creep spit sneak dive oversell`.split(/\s+/)
+);

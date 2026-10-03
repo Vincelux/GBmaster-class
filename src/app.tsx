@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import type { Mode, Pack } from './types';
+import type { Mode, Pack, VerbItem } from './types';
 import { PACKS } from './data';
 import { overall, packStats } from './srs';
 import { Session } from './screens/session';
@@ -10,7 +10,21 @@ type View =
   | { name: 'home' }
   | { name: 'settings' }
   | { name: 'pack'; pack: Pack }
-  | { name: 'session'; pack: Pack; mode: Mode };
+  | { name: 'session'; pack: Pack; mode: Mode; level: Level };
+
+type Level = 0 | 1 | 2 | 3;
+const LEVELS: { id: Level; label: string }[] = [
+  { id: 0, label: 'All' },
+  { id: 1, label: 'Essential' },
+  { id: 2, label: 'Intermediate' },
+  { id: 3, label: 'Advanced' },
+];
+
+/** Restrict a verb pack to one difficulty level (0 = everything). */
+function withLevel(pack: Pack, level: Level): Pack {
+  if (pack.kind !== 'verbs' || level === 0) return pack;
+  return { ...pack, items: pack.items.filter((v: VerbItem) => v.level === level) };
+}
 
 const MODE_INFO: Record<Mode, { label: string; hint: string }> = {
   flip: { label: 'Flashcards', hint: 'Recall, then check yourself' },
@@ -21,6 +35,7 @@ const MODE_INFO: Record<Mode, { label: string; hint: string }> = {
 
 export function App() {
   const [view, setView] = useState<View>({ name: 'home' });
+  const [level, setLevel] = useState<Level>(0);
   const home = () => setView({ name: 'home' });
 
   if (view.name === 'settings') return <Settings onBack={home} />;
@@ -28,7 +43,7 @@ export function App() {
   if (view.name === 'session') {
     return (
       <Session
-        pack={view.pack}
+        pack={withLevel(view.pack, view.level)}
         mode={view.mode}
         onExit={() => setView({ name: 'pack', pack: view.pack })}
       />
@@ -37,7 +52,7 @@ export function App() {
 
   if (view.name === 'pack') {
     const { pack } = view;
-    const s = packStats(pack.items);
+    const s = packStats(withLevel(pack, level).items);
     return (
       <main class="screen">
         <button class="back" onClick={home}>‹ Themes</button>
@@ -51,10 +66,28 @@ export function App() {
           <div><b>{s.fresh}</b><span>new</span></div>
           <div><b>{s.mastered}</b><span>mastered</span></div>
         </div>
+        {pack.kind === 'verbs' && (
+          <>
+            <h2 class="section">Difficulty</h2>
+            <div class="chips" role="tablist">
+              {LEVELS.map((l) => (
+                <button
+                  role="tab"
+                  aria-selected={level === l.id}
+                  class={level === l.id ? 'chip on' : 'chip'}
+                  onClick={() => setLevel(l.id)}
+                >
+                  {l.label} <small>{withLevel(pack, l.id).items.length}</small>
+                </button>
+              ))}
+            </div>
+            <p class="tiny">New verbs are always introduced from easiest to hardest.</p>
+          </>
+        )}
         <h2 class="section">Choose a training mode</h2>
         <div class="list">
           {pack.modes.map((m) => (
-            <button class="row" onClick={() => setView({ name: 'session', pack, mode: m })}>
+            <button class="row" onClick={() => setView({ name: 'session', pack, mode: m, level })}>
               <span>
                 <strong>{MODE_INFO[m].label}</strong>
                 <small>{MODE_INFO[m].hint}</small>
@@ -116,7 +149,7 @@ export function App() {
             {PACKS.filter((p) => p.group === group).map((p) => {
               const s = packStats(p.items);
               return (
-                <button class="card" onClick={() => setView({ name: 'pack', pack: p })}>
+                <button class="card" onClick={() => { setLevel(0); setView({ name: 'pack', pack: p }); }}>
                   <span class="badge">{p.icon}</span>
                   <span class="grow">
                     <strong>{p.title}</strong>

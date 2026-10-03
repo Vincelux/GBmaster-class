@@ -7,6 +7,8 @@ export interface VerbItem {
   pp: string[];
   fr: string;
   tip?: string;
+  /** 1 = essential, 2 = intermediate, 3 = advanced */
+  level: 1 | 2 | 3;
 }
 
 export interface VocabItem {
