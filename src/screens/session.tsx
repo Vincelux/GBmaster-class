@@ -5,6 +5,7 @@ import type { Item, Mode, Pack, VerbItem, VocabItem } from '../types';
 import { pickSession, record, shuffle } from '../srs';
 import { audioSupported, speak } from '../audio';
 import { getSettings } from '../activity';
+import { onAnswer, onSessionEnd, type GameEvent } from '../game';
 
 const SESSION_SIZE = 10;
 
@@ -19,24 +20,48 @@ export function Session({ pack, mode, onExit }: Props) {
   const items = useMemo(() => pickSession<Item>(pack.items, SESSION_SIZE), [pack, round]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [xp, setXp] = useState(0);
+  const [summary, setSummary] = useState<{ xp: number; events: GameEvent[] } | null>(null);
 
   const answer = (ok: boolean) => {
-    record(items[idx].id, ok);
+    const { first } = record(items[idx].id, ok);
+    setXp((x) => x + onAnswer(pack.id, ok, first));
     if (ok) setScore((s) => s + 1);
     setIdx((i) => i + 1);
   };
 
-  if (idx >= items.length) {
-    const pct = Math.round((score / items.length) * 100);
+  // Close the session exactly once, when the last card has been answered.
+  useEffect(() => {
+    if (items.length > 0 && idx >= items.length && !summary) setSummary(onSessionEnd(score, items.length));
+  }, [idx, items.length]);
+
+  if (items.length === 0) {
     return (
       <main class="screen center">
+        <p class="muted">Nothing to practise at this level yet.</p>
+        <button class="btn" onClick={onExit}>Back</button>
+      </main>
+    );
+  }
+
+  if (idx >= items.length) {
+    const pct = Math.round((score / items.length) * 100);
+    const perfect = score === items.length;
+    const total = xp + (summary?.xp ?? 0);
+    return (
+      <main class="screen center">
+        {(perfect || (summary?.events.length ?? 0) > 0) && <Confetti />}
         <p class="eyebrow">Session complete</p>
         <div class="score">{score}<span>/{items.length}</span></div>
         <p class="muted">
-          {pct === 100 ? 'Flawless.' : pct >= 70 ? 'Solid work.' : 'Those will come back soon, which is the point.'}
+          {perfect ? 'Flawless.' : pct >= 70 ? 'Solid work.' : 'Those will come back soon, which is the point.'}
         </p>
+        <div class="xp-earned"><b>+{total} XP</b><span>{perfect ? 'incl. flawless bonus' : 'earned this session'}</span></div>
+        {summary?.events.map((e) => (
+          <div class="reward-row"><span>{e.icon}</span><span>{e.kind === 'badge' ? `Badge unlocked: ${e.title}` : e.title}</span>{e.xp && <b>+{e.xp}</b>}</div>
+        ))}
         <div class="actions">
-          <button class="btn primary" onClick={() => { setIdx(0); setScore(0); setRound((r) => r + 1); }}>
+          <button class="btn primary" onClick={() => { setIdx(0); setScore(0); setXp(0); setSummary(null); setRound((r) => r + 1); }}>
             Another session
           </button>
           <button class="btn" onClick={onExit}>Done</button>
@@ -53,6 +78,7 @@ export function Session({ pack, mode, onExit }: Props) {
       <div class="topbar">
         <button class="back" onClick={onExit}>✕</button>
         <div class="progress thin"><i style={{ width: `${(idx / items.length) * 100}%` }} /></div>
+        <span class="cefr-tag" title="Level of this item">{item.cefr}</span>
         <span class="tiny">{idx + 1}/{items.length}</span>
       </div>
       <Fragment key={item.id}>
@@ -67,6 +93,17 @@ export function Session({ pack, mode, onExit }: Props) {
       )}
       </Fragment>
     </main>
+  );
+}
+
+function Confetti() {
+  const pieces = Array.from({ length: 28 }, (_, i) => i);
+  return (
+    <div class="confetti" aria-hidden="true">
+      {pieces.map((i) => (
+        <i style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i % 7) * 0.12}s`, background: ['#c9a24b', '#14213d', '#1f6f54', '#a3342b'][i % 4] }} />
+      ))}
+    </div>
   );
 }
 

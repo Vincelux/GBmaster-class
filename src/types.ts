@@ -1,3 +1,5 @@
+import type { Cefr } from './cefr';
+
 export type Mode = 'flip' | 'choice' | 'type' | 'cloze';
 
 export interface VerbItem {
@@ -7,6 +9,7 @@ export interface VerbItem {
   pp: string[];
   fr: string;
   tip?: string;
+  cefr: Cefr;
 }
 
 export interface VocabItem {
@@ -16,6 +19,7 @@ export interface VocabItem {
   def: string;
   /** Example sentence; the target expression is wrapped in {braces}. */
   example: string;
+  cefr: Cefr;
 }
 
 interface PackBase {

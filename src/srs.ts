@@ -1,8 +1,10 @@
 // Leitner-style spaced repetition, stored locally on the device.
 import type { Item } from './types';
 import { bumpToday } from './activity';
+import { rank } from './cefr';
+import { getProfile } from './profile';
+import { onReset, read, write } from './store';
 
-const KEY = 'gbm.progress.v1';
 const DAY = 86_400_000;
 const INTERVAL_DAYS = [0, 1, 2, 4, 8, 16, 32];
 export const MASTERED_BOX = 4;
@@ -12,33 +14,28 @@ export interface Card {
   due: number;
   seen: number;
   ok: number;
+  /** last update time, used to merge progress from several devices */
+  t?: number;
 }
 type Store = Record<string, Card>;
 
 let cache: Store | null = null;
+onReset(() => (cache = null));
 
-function read(): Store {
-  if (cache) return cache;
-  try {
-    cache = JSON.parse(localStorage.getItem(KEY) || '{}');
-  } catch {
-    cache = {};
-  }
-  return cache!;
+function load(): Store {
+  return (cache ??= read<Store>('progress', {}));
 }
 
-function write() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(cache));
-  } catch {
-    /* storage unavailable: progress lives in memory only */
-  }
+function save() {
+  write('progress', cache);
 }
 
-export const getCard = (id: string): Card | undefined => read()[id];
+export const getCard = (id: string): Card | undefined => load()[id];
 
-export function record(id: string, correct: boolean) {
-  const s = read();
+/** Returns whether this was the first time the card was ever answered. */
+export function record(id: string, correct: boolean): { first: boolean } {
+  const s = load();
+  const first = !s[id];
   const c = s[id] ?? { box: 0, due: 0, seen: 0, ok: 0 };
   c.seen += 1;
   if (correct) {
@@ -49,9 +46,11 @@ export function record(id: string, correct: boolean) {
     c.box = 1;
     c.due = Date.now() + 10 * 60_000;
   }
+  c.t = Date.now();
   s[id] = c;
-  write();
+  save();
   bumpToday();
+  return { first };
 }
 
 export function packStats(items: Item[]) {
@@ -89,7 +88,15 @@ export function pickSession<T extends Item>(items: T[], n = 10): T[] {
   }
   due.sort((a, b) => getCard(a.id)!.box - getCard(b.id)!.box);
   later.sort((a, b) => getCard(a.id)!.due - getCard(b.id)!.due);
-  return [...due, ...shuffle(fresh), ...later].slice(0, n);
+  // New cards come from the learner's own level first, then neighbouring levels
+  // (slightly easier before slightly harder), randomised within a level.
+  const mine = rank(getProfile()?.cefr ?? 'B1');
+  const dist = (it: Item) => {
+    const r = rank(it.cefr);
+    return Math.abs(r - mine) * 2 + (r > mine ? 1 : 0);
+  };
+  const ordered = shuffle(fresh).sort((x, y) => dist(x) - dist(y));
+  return [...due, ...ordered, ...later].slice(0, n);
 }
 
 export function overall(items: Item[][]) {
