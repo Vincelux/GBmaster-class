@@ -1,18 +1,15 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Mode, Pack } from './types';
-import { getCloudBackend, type CloudBackend, type CloudUser } from './backend';
 import {
-  currentLocalProfile, listLocalProfiles,
-  renameLocalProfile, setCurrentLocalProfile, type LocalProfile,
+  currentLocalProfile, listLocalProfiles, setCurrentLocalProfile, updateLocalProfile, type LocalProfile,
 } from './accounts';
-import { adoptLegacyData, has, setNamespace, wipe } from './store';
+import { adoptLegacyData, setNamespace, wipe } from './store';
 import { createProfile, getProfile } from './profile';
-import { flushSync, startSync, stopSync } from './sync';
 import type { Cefr } from './cefr';
 import { Session } from './screens/session';
 import { Settings } from './screens/settings';
 import { Home, PackScreen, withScope, type Scope } from './screens/home';
-import { AuthScreen, LocalPicker, RecoveryScreen } from './screens/auth';
+import { PlayerPicker } from './screens/players';
 import { Onboarding } from './screens/onboarding';
 import { ProfileScreen } from './screens/profile';
 import { Toasts } from './screens/toasts';
@@ -24,66 +21,35 @@ type View =
   | { name: 'pack'; pack: Pack }
   | { name: 'session'; pack: Pack; mode: Mode; scope: Scope };
 
-type Phase = 'boot' | 'auth' | 'recovery' | 'pick' | 'onboarding' | 'app';
+type Phase = 'pick' | 'onboarding' | 'app';
 
 export function App() {
-  const [phase, setPhase] = useState<Phase>('boot');
+  const [phase, setPhase] = useState<Phase>('pick');
   const [view, setView] = useState<View>({ name: 'home' });
-  const [cloud, setCloud] = useState<CloudBackend | null>(null);
-  const [user, setUser] = useState<CloudUser | null>(null);
-  const [local, setLocal] = useState<LocalProfile | null>(null);
+  const [player, setPlayer] = useState<LocalProfile | null>(null);
 
-  /* Open a user's data, then decide between onboarding and the app. */
-  const enterCloud = async (b: CloudBackend, u: CloudUser) => {
-    setNamespace(u.id);
-    if (!has('profile') && !has('progress')) adoptLegacyData();
-    await startSync(b, u);
-    setUser(u);
-    setView({ name: 'home' });
-    setPhase(getProfile() ? 'app' : 'onboarding');
-  };
-
-  const enterLocal = (p: LocalProfile, fresh = false) => {
+  /* Open a player's data, then decide between level selection and the app. */
+  const enter = (p: LocalProfile, fresh = false) => {
     setNamespace(p.id);
     if (fresh && listLocalProfiles().length === 1) adoptLegacyData();
     setCurrentLocalProfile(p.id);
-    setLocal(p);
+    setPlayer(p);
     setView({ name: 'home' });
     setPhase(getProfile() ? 'app' : 'onboarding');
   };
 
+  // Resume the last player on launch.
   useEffect(() => {
-    (async () => {
-      const b = await getCloudBackend();
-      setCloud(b);
-      if (b) {
-        b.onRecovery(() => setPhase('recovery'));
-        const u = await b.init();
-        if (u) await enterCloud(b, u);
-        else setPhase('auth');
-      } else {
-        const id = currentLocalProfile();
-        const p = listLocalProfiles().find((x) => x.id === id);
-        if (p) enterLocal(p);
-        else setPhase('pick');
-      }
-    })();
+    const p = currentLocalProfile();
+    if (p) enter(p);
   }, []);
 
-  const signOut = async () => {
-    if (cloud) {
-      await flushSync();
-      stopSync();
-      await cloud.signOut();
-      setNamespace('guest');
-      setUser(null);
-      setPhase('auth');
-    } else {
-      setCurrentLocalProfile(null);
-      setNamespace('guest');
-      setLocal(null);
-      setPhase('pick');
-    }
+  const switchPlayer = () => {
+    setCurrentLocalProfile(null);
+    setNamespace('guest');
+    setPlayer(null);
+    setView({ name: 'home' });
+    setPhase('pick');
   };
 
   const resetProgress = () => {
@@ -92,34 +58,21 @@ export function App() {
     setPhase('onboarding');
   };
 
-  const finishOnboarding = (name: string, level: Cefr) => {
-    createProfile(name, level);
-    if (local) renameLocalProfile(local.id, name.trim());
+  const finishOnboarding = (level: Cefr) => {
+    createProfile(player!.name, level);
     setView({ name: 'home' });
     setPhase('app');
   };
 
   let screen;
-  if (phase === 'boot') {
-    screen = <main class="screen center"><span class="badge big">GB</span></main>;
-  } else if (phase === 'auth' && cloud) {
-    screen = <AuthScreen backend={cloud} onUser={(u) => void enterCloud(cloud, u)} />;
-  } else if (phase === 'recovery' && cloud) {
-    screen = <RecoveryScreen backend={cloud} onDone={() => setPhase('auth')} />;
-  } else if (phase === 'pick') {
-    screen = <LocalPicker onPick={(p) => enterLocal(p)} onCreate={(p) => enterLocal(p, true)} />;
+  if (phase === 'pick' || !player) {
+    screen = <PlayerPicker onPick={(p) => enter(p)} onCreate={(p) => enter(p, true)} />;
   } else if (phase === 'onboarding') {
-    screen = (
-      <Onboarding
-        initialName={local?.name ?? user?.email.split('@')[0] ?? ''}
-        onDone={finishOnboarding}
-      />
-    );
+    screen = <Onboarding name={player.name} onDone={finishOnboarding} />;
   } else if (view.name === 'session') {
-    const mine = getProfile()!.cefr;
     screen = (
       <Session
-        pack={withScope(view.pack, view.scope, mine)}
+        pack={withScope(view.pack, view.scope, getProfile()!.cefr)}
         mode={view.mode}
         onExit={() => setView({ name: 'pack', pack: view.pack })}
       />
@@ -137,21 +90,25 @@ export function App() {
   } else if (view.name === 'profile') {
     screen = (
       <ProfileScreen
-        mode={cloud ? 'cloud' : 'local'}
-        email={user?.email}
+        player={player}
         onBack={() => setView({ name: 'home' })}
         onSettings={() => setView({ name: 'settings' })}
-        onSignOut={() => void signOut()}
+        onSwitch={switchPlayer}
         onReset={resetProgress}
-        onRename={(n) => local && renameLocalProfile(local.id, n)}
+        onEdit={(patch) => {
+          updateLocalProfile(player.id, patch);
+          setPlayer({ ...player, ...patch });
+        }}
       />
     );
   } else {
     screen = (
       <Home
+        player={player}
         onOpenPack={(pack) => setView({ name: 'pack', pack })}
         onProfile={() => setView({ name: 'profile' })}
         onSettings={() => setView({ name: 'settings' })}
+        onSwitch={switchPlayer}
       />
     );
   }
@@ -163,4 +120,3 @@ export function App() {
     </>
   );
 }
-

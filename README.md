@@ -9,27 +9,14 @@ Works offline once installed; progress is stored locally (spaced repetition, Lei
 
 Verbs: flashcards, multiple choice, typing. Vocabulary packs: flashcards, multiple choice, in-context gap fill.
 
-## Accounts, levels and rewards
-- **Levels (CEFR A1 to C2)**: chosen at first sign-in and changeable at any time from the profile. Progress is
-  never lost when the level changes; only what is *suggested* changes. Every item carries its own level.
+## Players, levels and rewards
+- **Players, no account**: a "Who is learning today?" screen lets each person create a profile (first name and avatar).
+  Each player's progress is stored separately on the device. No e-mail, no password, no server, works offline.
+  Players can be added, switched (🔄 on the home screen) or deleted (with confirmation).
+- **Levels (CEFR A1 to C2)**: chosen when a profile is created and changeable at any time from the profile page.
+  Progress is never lost when the level changes; only what is *suggested* changes. Every item carries its own level.
 - **Rewards**: XP and corporate-style ranks, 22 badges, daily and weekly challenges, streaks.
-- **Two modes**:
-  - *Device profiles* (default, no setup): several profiles on one device, no password, data stays on the device.
-  - *Cloud accounts* (e-mail + password, progress follows you across devices): needs a free Supabase project.
-
-### Enable cloud accounts (one-off, about 10 minutes)
-1. Create a free project at <https://supabase.com> (choose an EU region).
-2. In **SQL Editor**, run the contents of `supabase/schema.sql`.
-3. In **Authentication -> Providers**, keep *Email* enabled. For the simplest sign-up, turn off *Confirm email*
-   (otherwise users must click a link in an e-mail before signing in).
-4. In **Authentication -> URL Configuration**, set *Site URL* to the app address
-   (e.g. `https://<user>.github.io/GBmaster-class/`) so password-reset links come back to the app.
-5. In **Project Settings -> API**, copy the *Project URL* and the *anon public* key.
-6. In the GitHub repository: **Settings -> Secrets and variables -> Actions -> Variables**, add
-   `SUPABASE_URL` and `SUPABASE_ANON_KEY`, then re-run the *Build and deploy* workflow.
-
-The anon key is public by design; each user can only read and write their own row (see the policies in
-`supabase/schema.sql`). For local development, copy `.env.example` to `.env.local`.
+- Limit: data lives in the browser of the device, so clearing site data or switching device means starting again.
 
 ## Features
 - Spoken pronunciation (browser speech synthesis, British English preferred), optional auto-play

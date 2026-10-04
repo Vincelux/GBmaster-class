@@ -328,3 +328,27 @@ mark { background: none; color: var(--brass); font-weight: 700; }
   100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .confetti { display: none; } .toast { animation: none; } }
+
+/* ---------- players ---------- */
+.player { display: flex; align-items: stretch; gap: 8px; }
+.player .card { flex: 1; min-width: 0; }
+.trash {
+  flex: none; width: 52px; border: 1px solid var(--line); border-radius: 16px;
+  background: var(--surface); font-size: 18px; text-align: center;
+}
+.avatar { font-size: 22px; line-height: 1; }
+.avatar.big { font-size: 38px; }
+.avatar-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.avatar-opt {
+  aspect-ratio: 1; display: grid; place-items: center; font-size: 22px; text-align: center;
+  border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg);
+}
+.avatar-opt.on { border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass) inset; background: var(--surface); }
+
+
+/* keep grid/flex children from forcing the page wider than the screen */
+.screen > *, .panel > * { min-width: 0; }
+.panel { min-width: 0; }
+.avatar-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.avatar-opt { font-size: 20px; min-width: 0; }
+@media (max-width: 400px) { .avatar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

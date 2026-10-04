@@ -1,40 +1,44 @@
-// Device-only profiles, used when no cloud service is configured.
-// No password: these simply keep several people's progress apart on one device.
+// Players on this device. There are no accounts: everything stays in the browser.
 
 export interface LocalProfile {
   id: string;
   name: string;
+  avatar: string;
 }
+
+export const AVATARS = ['🦉', '🦊', '🦁', '🐺', '🦅', '🐬', '🐘', '🦋', '🌿', '🧭', '☕', '🎧', '🚀', '⚓', '🎯', '🌍'];
 
 const LIST = 'gbm.profiles';
 const CURRENT = 'gbm.currentProfile';
 
 export function listLocalProfiles(): LocalProfile[] {
   try {
-    return JSON.parse(localStorage.getItem(LIST) || '[]');
+    const l = JSON.parse(localStorage.getItem(LIST) || '[]') as LocalProfile[];
+    return l.map((p) => ({ ...p, avatar: p.avatar || AVATARS[0] }));
   } catch {
     return [];
   }
 }
 const saveList = (l: LocalProfile[]) => localStorage.setItem(LIST, JSON.stringify(l));
 
-export function currentLocalProfile(): string | null {
+export function currentLocalProfile(): LocalProfile | null {
   const id = localStorage.getItem(CURRENT);
-  return id && listLocalProfiles().some((p) => p.id === id) ? id : null;
+  return listLocalProfiles().find((p) => p.id === id) ?? null;
 }
 export const setCurrentLocalProfile = (id: string | null) =>
   id ? localStorage.setItem(CURRENT, id) : localStorage.removeItem(CURRENT);
 
-export function addLocalProfile(name: string): LocalProfile {
-  const p = { id: 'p' + Date.now().toString(36), name: name.trim() || 'Learner' };
+export function addLocalProfile(name: string, avatar: string): LocalProfile {
+  const p = { id: 'p' + Date.now().toString(36), name: name.trim() || 'Learner', avatar };
   saveList([...listLocalProfiles(), p]);
   return p;
 }
 
-export function renameLocalProfile(id: string, name: string) {
-  saveList(listLocalProfiles().map((p) => (p.id === id ? { ...p, name } : p)));
+export function updateLocalProfile(id: string, patch: Partial<Pick<LocalProfile, 'name' | 'avatar'>>) {
+  saveList(listLocalProfiles().map((p) => (p.id === id ? { ...p, ...patch } : p)));
 }
 
+/** Deletes the player and everything they stored. */
 export function removeLocalProfile(id: string) {
   saveList(listLocalProfiles().filter((p) => p.id !== id));
   Object.keys(localStorage)

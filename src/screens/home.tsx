@@ -6,6 +6,7 @@ import { getSettings, goalReached, streak, todayCount } from '../activity';
 import { challenges, getGame, levelAdvice, rankInfo } from '../game';
 import { BANDS, rank, type Cefr } from '../cefr';
 import { getProfile } from '../profile';
+import type { LocalProfile } from '../accounts';
 
 /* ---------- level scope ---------- */
 
@@ -37,12 +38,14 @@ const MODE_INFO: Record<Mode, { label: string; hint: string }> = {
 /* ---------- home ---------- */
 
 interface HomeProps {
+  player: LocalProfile;
   onOpenPack: (p: Pack) => void;
   onProfile: () => void;
   onSettings: () => void;
+  onSwitch: () => void;
 }
 
-export function Home({ onOpenPack, onProfile, onSettings }: HomeProps) {
+export function Home({ player, onOpenPack, onProfile, onSettings, onSwitch }: HomeProps) {
   const profile = getProfile()!;
   const o = overall(PACKS.map((p) => p.items));
   const pct = o.total ? Math.round((o.mastered / o.total) * 100) : 0;
@@ -63,8 +66,9 @@ export function Home({ onOpenPack, onProfile, onSettings }: HomeProps) {
         <div class="hero-top">
           <p class="eyebrow">GB Master Class</p>
           <div class="hero-actions">
+            <button class="icon-btn" aria-label="Switch player" title="Switch player" onClick={onSwitch}>🔄</button>
             <button class="icon-btn" aria-label="Settings" onClick={onSettings}>⚙</button>
-            <button class="avatar" aria-label="My profile" onClick={onProfile}>{profile.name.slice(0, 1).toUpperCase()}</button>
+            <button class="avatar" aria-label="My profile" onClick={onProfile}>{player.avatar}</button>
           </div>
         </div>
         <h1>{greeting}, {profile.name}.</h1>

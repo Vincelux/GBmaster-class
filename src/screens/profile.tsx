@@ -1,38 +1,28 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { BADGES, getGame, levelAdvice, masteredCounts, rankInfo } from '../game';
 import { streak } from '../activity';
 import { CEFR_INFO, type Cefr } from '../cefr';
 import { getProfile, updateProfile } from '../profile';
-import { getSyncStatus, onSyncStatus, type SyncStatus } from '../sync';
+import type { LocalProfile } from '../accounts';
+import { AvatarGrid } from './players';
 import { onLevelChange } from '../game';
 import { toast } from '../toast';
 import { LevelPicker } from './onboarding';
 
 interface Props {
-  mode: 'cloud' | 'local';
-  email?: string;
+  player: LocalProfile;
   onBack: () => void;
   onSettings: () => void;
-  onSignOut: () => void;
+  onSwitch: () => void;
   onReset: () => void;
-  onRename: (name: string) => void;
+  onEdit: (patch: { name?: string; avatar?: string }) => void;
 }
 
-const SYNC_LABEL: Record<SyncStatus, string> = {
-  off: 'Not syncing',
-  syncing: 'Syncing…',
-  synced: 'Saved online',
-  offline: 'Offline: will sync when back online',
-  error: 'Sync problem: will retry',
-};
-
-export function ProfileScreen({ mode, email, onBack, onSettings, onSignOut, onReset, onRename }: Props) {
+export function ProfileScreen({ player, onBack, onSettings, onSwitch, onReset, onEdit }: Props) {
   const [profile, setProfile] = useState(getProfile()!);
-  const [sync, setSync] = useState(getSyncStatus());
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(profile.name);
+  const [name, setName] = useState(player.name);
   const [changing, setChanging] = useState(false);
-  useEffect(() => onSyncStatus(setSync), []);
 
   const g = getGame();
   const rank = rankInfo();
@@ -54,7 +44,7 @@ export function ProfileScreen({ mode, email, onBack, onSettings, onSignOut, onRe
     const n = name.trim();
     if (!n) return;
     updateProfile({ name: n });
-    onRename(n);
+    onEdit({ name: n });
     setProfile(getProfile()!);
     setEditing(false);
   };
@@ -64,14 +54,20 @@ export function ProfileScreen({ mode, email, onBack, onSettings, onSignOut, onRe
       <button class="back" onClick={onBack}>‹ Back</button>
 
       <header class="me">
-        <span class="avatar big">{profile.name.slice(0, 1).toUpperCase()}</span>
+        <span class="avatar big">{player.avatar}</span>
         {editing ? (
-          <form class="inline-edit" onSubmit={saveName}>
-            <input value={name} maxLength={30} autoFocus onInput={(e) => setName((e.target as HTMLInputElement).value)} />
-            <button class="btn primary" type="submit">Save</button>
-          </form>
+          <>
+            <form class="inline-edit" onSubmit={saveName}>
+              <input value={name} maxLength={30} autoFocus onInput={(e) => setName((e.target as HTMLInputElement).value)} />
+              <button class="btn primary" type="submit">Save</button>
+            </form>
+            <AvatarGrid value={player.avatar} onChange={(a) => onEdit({ avatar: a })} />
+          </>
         ) : (
-          <h1 onClick={() => setEditing(true)} title="Tap to rename">{profile.name}</h1>
+          <>
+            <h1>{player.name}</h1>
+            <button class="link" onClick={() => setEditing(true)}>Edit name and avatar</button>
+          </>
         )}
         <p class="rank-line"><b>{rank.name}</b> · {g.xp} XP</p>
         <div class="progress"><i style={{ width: `${rank.progress * 100}%` }} /></div>
@@ -129,24 +125,14 @@ export function ProfileScreen({ mode, email, onBack, onSettings, onSignOut, onRe
       </section>
 
       <section class="panel">
-        <h2>Account</h2>
-        {mode === 'cloud' ? (
-          <>
-            <p class="muted small">{email}</p>
-            <p class="tiny">{SYNC_LABEL[sync]}</p>
-            <button class="btn" onClick={onSignOut}>Sign out</button>
-          </>
-        ) : (
-          <>
-            <p class="muted small">This profile is stored on this device only.</p>
-            <button class="btn" onClick={onSignOut}>Switch profile</button>
-          </>
-        )}
+        <h2>Player</h2>
+        <p class="muted small">Your progress is stored on this device only.</p>
+        <button class="btn" onClick={onSwitch}>🔄 Switch player</button>
         <button class="btn" onClick={onSettings}>Settings: goal, reminder, audio</button>
         <button
           class="btn danger"
           onClick={() => {
-            if (confirm('Erase all your progress, XP and badges? Your account is kept.')) onReset();
+            if (confirm('Erase all your progress, XP and badges? Your profile is kept.')) onReset();
           }}
         >
           Reset my progress

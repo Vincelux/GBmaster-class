@@ -23,32 +23,23 @@ export function LevelPicker({ value, onChange }: { value: Cefr; onChange: (l: Ce
   );
 }
 
-export function Onboarding({
-  initialName, onDone,
-}: { initialName: string; onDone: (name: string, level: Cefr) => void }) {
-  const [name, setName] = useState(initialName);
+export function Onboarding({ name, onDone }: { name: string; onDone: (level: Cefr) => void }) {
   const [level, setLevel] = useState<Cefr>('B2');
 
   return (
     <main class="screen">
       <header class="hero">
         <p class="eyebrow">Welcome</p>
-        <h1>Let’s set up your path.</h1>
+        <h1>Hello, {name}.</h1>
         <p class="muted">
           Pick the CEFR level that fits you. The content adapts to it, and you can change it at any time from your
           profile without losing any progress.
         </p>
       </header>
-      <label class="field">
-        What should we call you?
-        <input value={name} maxLength={30} onInput={(e) => setName((e.target as HTMLInputElement).value)} />
-      </label>
       <h2 class="section">Your level</h2>
       <LevelPicker value={level} onChange={setLevel} />
       <p class="tiny">Not sure? Start with B1 or B2: the app will suggest moving up or down based on your results.</p>
-      <button class="btn primary" disabled={!name.trim()} onClick={() => onDone(name, level)}>
-        Start
-      </button>
+      <button class="btn primary" onClick={() => onDone(level)}>Start</button>
     </main>
   );
 }
