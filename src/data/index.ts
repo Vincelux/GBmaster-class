@@ -1,5 +1,6 @@
 import type { Pack, VerbItem, VocabItem } from '../types';
-import { ESSENTIAL, INTERMEDIATE, VERBS } from './verbs';
+import { VERBS, verbLevel } from './verbs';
+import { vocabLevel } from './levels';
 import { LEGAL } from './legal';
 import { FINANCE } from './finance';
 import { BUSINESS } from './business';
@@ -14,7 +15,14 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(
 const split = (s: string) => s.split('/').map((x) => x.trim());
 
 function vocab(packId: string, rows: [string, string, string, string][]): VocabItem[] {
-  return rows.map(([term, fr, def, example]) => ({ id: `${packId}:${slug(term)}`, term, fr, def, example }));
+  return rows.map(([term, fr, def, example]) => ({
+    id: `${packId}:${slug(term)}`,
+    term,
+    fr,
+    def,
+    example,
+    cefr: vocabLevel(packId, term),
+  }));
 }
 
 const verbItems: VerbItem[] = VERBS.map(([base, past, pp, fr, tip]) => ({
@@ -24,7 +32,7 @@ const verbItems: VerbItem[] = VERBS.map(([base, past, pp, fr, tip]) => ({
   pp: split(pp),
   fr,
   tip,
-  level: ESSENTIAL.has(base) ? 1 : INTERMEDIATE.has(base) ? 2 : 3,
+  cefr: verbLevel(base),
 }));
 
 // To add a theme: create a data file and register a pack here.

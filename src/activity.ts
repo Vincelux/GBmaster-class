@@ -1,6 +1,6 @@
-// Daily activity, streak and user settings (all local to the device).
+// Daily activity, streak and user settings.
 
-const KEY = 'gbm.activity.v1';
+import { onReset, read, write } from './store';
 
 export interface Settings {
   goal: number;
@@ -11,32 +11,28 @@ interface State {
   counts: Record<string, number>;
   done: Record<string, true>;
   settings: Settings;
+  /** when settings last changed, used to merge between devices */
+  settingsAt?: number;
 }
 
 const DEFAULTS: Settings = { goal: 10, autoplay: false, reminder: '08:30' };
 let state: State | null = null;
+onReset(() => (state = null));
 
 function load(): State {
   if (state) return state;
-  try {
-    const raw = JSON.parse(localStorage.getItem(KEY) || '{}');
-    state = {
-      counts: raw.counts ?? {},
-      done: raw.done ?? {},
-      settings: { ...DEFAULTS, ...(raw.settings ?? {}) },
-    };
-  } catch {
-    state = { counts: {}, done: {}, settings: { ...DEFAULTS } };
-  }
+  const raw = read<Partial<State>>('activity', {});
+  state = {
+    counts: raw.counts ?? {},
+    done: raw.done ?? {},
+    settings: { ...DEFAULTS, ...(raw.settings ?? {}) },
+    settingsAt: raw.settingsAt,
+  };
   return state;
 }
 
 function save() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* in-memory only */
-  }
+  write('activity', state);
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -51,6 +47,7 @@ export const getSettings = () => load().settings;
 export function setSettings(patch: Partial<Settings>) {
   const s = load();
   s.settings = { ...s.settings, ...patch };
+  s.settingsAt = Date.now();
   save();
 }
 

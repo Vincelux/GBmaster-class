@@ -1,3 +1,5 @@
+import type { Cefr } from '../cefr';
+
 // [base, past (variants with /), past participle, French, optional tip]
 // The first variant is the preferred British form.
 export const VERBS: [string, string, string, string, string?][] = [
@@ -293,7 +295,7 @@ export const VERBS: [string, string, string, string, string?][] = [
   ['let', 'let', 'let', 'laisser ; permettre', 'Let\'s = let us (proposition).'],
 ];
 
-// Difficulty levels: anything not listed here is level 3 (advanced).
+// Difficulty tiers (used to derive CEFR levels): anything not listed is advanced.
 export const ESSENTIAL = new Set(
   `be become begin bite break bring build buy catch choose come cost cut do draw drink drive eat fall feel fight find fly
    forget get give go grow have hear hide hit hold hurt keep know lead leave lend let lie lose make mean meet pay put read
@@ -310,3 +312,21 @@ export const INTERMEDIATE = new Set(
    rerun resell resend retake rewind remake repay reread outbid outsell undercut underpay undersell underwrite unfreeze
    mislay misspell mishear misread forecast input babysit breastfeed creep spit sneak dive oversell`.split(/\s+/)
 );
+
+const words = (t: string) => new Set(t.split(/\s+/).filter(Boolean));
+
+const A1 = words(`be have do go come get give make take see know say tell eat drink sleep buy sell write read speak run put sit stand win`);
+const B1_FROM_ESSENTIAL = words(`become bite cost grow hide hurt lead lie mean rise set shoot steal tear wake`);
+const B1_FROM_INTERMEDIATE = words(`beat bend blow burn burst deal dig dream feed forgive freeze hang lay learn shake shine sink slide smell spell spill split spread stick strike sweep swing weep`);
+const C1_FROM_INTERMEDIATE = words(`bind breed cling flee forbid kneel rid seek shed sow sting weave mislay unfreeze underwrite undersell outsell outbid babysit breastfeed oversell sew bid`);
+const C2 = words(`abide beget befall behold beseech bereave beset bespeak bestride betake cleave forbear forswear gainsay gild hamstring hew inbreed inlay interweave outwear overbear rend slay smite strew stride strive forsake wed shear mow sling fling slit tread unmake unsay waylay wring thrust`);
+
+export function verbLevel(base: string): Cefr {
+  if (A1.has(base)) return 'A1';
+  if (ESSENTIAL.has(base)) return B1_FROM_ESSENTIAL.has(base) ? 'B1' : 'A2';
+  if (INTERMEDIATE.has(base)) {
+    if (B1_FROM_INTERMEDIATE.has(base)) return 'B1';
+    return C1_FROM_INTERMEDIATE.has(base) ? 'C1' : 'B2';
+  }
+  return C2.has(base) ? 'C2' : 'C1';
+}
